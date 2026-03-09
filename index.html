@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>World Clock</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background: linear-gradient(135deg,#6a7bd8,#7a4fb5);
+    text-align:center;
+    color:white;
+}
+
+h1{
+    margin-top:20px;
+}
+
+.controls{
+    margin:15px;
+}
+
+select{
+    padding:6px 10px;
+    border-radius:8px;
+    border:none;
+}
+
+.container{
+    width:100%;
+    max-width:1100px;
+    margin:auto;
+    display:grid;
+    grid-template-columns: repeat(3,1fr);
+    gap:25px;
+    padding:20px;
+}
+
+.clock-card{
+    background:#f3f3f3;
+    border-radius:15px;
+    padding:20px;
+    color:black;
+}
+
+.city{
+    font-weight:bold;
+    color:#3c5ccf;
+}
+
+.digital{
+    font-size:26px;
+    letter-spacing:3px;
+    margin:10px 0;
+}
+
+.date{
+    font-size:13px;
+    color:#666;
+}
+
+canvas{
+    margin-top:10px;
+}
+.clock-card{
+    background:#f3f3f3;
+    border-radius:15px;
+    padding:20px;
+    color:black;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🌍 World Clock</h1>
+
+<div class="controls">
+Display Mode:
+<select id="mode">
+<option value="both">Both</option>
+<option value="analog">Analog</option>
+<option value="digital">Digital</option>
+</select>
+</div>
+
+<div class="container">
+
+<div class="clock-card">
+<div class="city">VN Hanoi, Vietnam</div>
+<div class="digital" id="d1"></div>
+<div class="date" id="date1"></div>
+<canvas id="c1" width="150" height="150"></canvas>
+</div>
+
+<div class="clock-card">
+<div class="city">MM Yangon, Myanmar</div>
+<div class="digital" id="d2"></div>
+<div class="date" id="date2"></div>
+<canvas id="c2" width="150" height="150"></canvas>
+</div>
+
+<div class="clock-card">
+<div class="city">KR Seoul, Korea</div>
+<div class="digital" id="d3"></div>
+<div class="date" id="date3"></div>
+<canvas id="c3" width="150" height="150"></canvas>
+</div>
+
+<div class="clock-card">
+<div class="city">JP Tokyo, Japan</div>
+<div class="digital" id="d4"></div>
+<div class="date" id="date4"></div>
+<canvas id="c4" width="150" height="150"></canvas>
+</div>
+
+<div class="clock-card">
+<div class="city">SG Singapore</div>
+<div class="digital" id="d5"></div>
+<div class="date" id="date5"></div>
+<canvas id="c5" width="150" height="150"></canvas>
+</div>
+
+<div class="clock-card">
+<div class="city">MY Kuala Lumpur, Malaysia</div>
+<div class="digital" id="d6"></div>
+<div class="date" id="date6"></div>
+<canvas id="c6" width="150" height="150"></canvas>
+</div>
+
+</div>
+
+<script>
+
+const clocks = [
+{tz:"Asia/Ho_Chi_Minh", d:"d1", date:"date1", canvas:"c1"},
+{tz:"Asia/Yangon", d:"d2", date:"date2", canvas:"c2"},
+{tz:"Asia/Seoul", d:"d3", date:"date3", canvas:"c3"},
+{tz:"Asia/Tokyo", d:"d4", date:"date4", canvas:"c4"},
+{tz:"Asia/Singapore", d:"d5", date:"date5", canvas:"c5"},
+{tz:"Asia/Kuala_Lumpur", d:"d6", date:"date6", canvas:"c6"},
+];
+
+function updateClocks(){
+
+clocks.forEach(c=>{
+
+let now = new Date().toLocaleString("en-US",{timeZone:c.tz});
+let date = new Date(now);
+
+let h=date.getHours();
+let m=date.getMinutes();
+let s=date.getSeconds();
+
+document.getElementById(c.d).innerText=
+`${String(h).padStart(2,"0")} : ${String(m).padStart(2,"0")} : ${String(s).padStart(2,"0")}`;
+
+document.getElementById(c.date).innerText=
+date.toDateString();
+
+drawClock(c.canvas,h,m,s);
+
+})
+
+}
+function drawClock(id,h,m,s){
+
+let canvas=document.getElementById(id);
+let ctx=canvas.getContext("2d");
+
+let radius = canvas.width/2;
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+ctx.save();
+ctx.translate(radius,radius);
+
+drawFace(ctx,radius);
+drawNumbers(ctx,radius);
+drawHands(ctx,radius,h,m,s);
+
+ctx.restore();
+}
+
+function drawFace(ctx,radius){
+
+ctx.beginPath();
+ctx.arc(0,0,radius-5,0,Math.PI*2);
+ctx.strokeStyle="#4a6cff";
+ctx.lineWidth=4;
+ctx.stroke();
+
+}
+
+function drawNumbers(ctx,radius){
+
+ctx.font = radius*0.18 + "px Arial";
+ctx.textBaseline="middle";
+ctx.textAlign="center";
+ctx.fillStyle="#3c5ccf";
+
+for(let num=1; num<=12; num++){
+
+let ang = num * Math.PI / 6;
+
+let x = Math.sin(ang) * (radius*0.8);
+let y = -Math.cos(ang) * (radius*0.8);
+
+ctx.fillText(num,x,y);
+
+}
+
+}
+
+function drawHands(ctx,radius,h,m,s){
+
+let hour = h%12;
+hour = (hour*Math.PI/6)+(m*Math.PI/(6*60));
+
+drawHand(ctx,hour,radius*0.5,5);
+
+let minute=(m*Math.PI/30);
+
+drawHand(ctx,minute,radius*0.7,3);
+
+let second=(s*Math.PI/30);
+
+drawHand(ctx,second,radius*0.8,1,"red");
+
+}
+
+function drawHand(ctx,pos,length,width,color="black"){
+
+ctx.beginPath();
+ctx.lineWidth=width;
+ctx.lineCap="round";
+ctx.strokeStyle=color;
+
+ctx.rotate(pos);
+ctx.moveTo(0,0);
+ctx.lineTo(0,-length);
+ctx.stroke();
+ctx.rotate(-pos);
+
+}
+
+setInterval(updateClocks,1000);
+updateClocks();
+
+const modeSelect = document.getElementById("mode");
+
+modeSelect.addEventListener("change", function () {
+
+    const mode = this.value;
+
+    document.querySelectorAll(".clock-card").forEach(card => {
+
+        const digital = card.querySelector(".digital");
+        const canvas = card.querySelector("canvas");
+
+        if (mode === "both") {
+            digital.style.display = "block";
+            canvas.style.display = "block";
+        }
+
+        if (mode === "analog") {
+            digital.style.display = "none";
+            canvas.style.display = "block";
+        }
+
+        if (mode === "digital") {
+            digital.style.display = "block";
+            canvas.style.display = "none";
+        }
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>
