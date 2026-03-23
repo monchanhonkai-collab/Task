@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Event Check-In | QR to Google Form</title>
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f4f7fc;
+            padding: 2rem 1.5rem;
+            color: #1a2c3e;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* header */
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #0f2b3d, #1b4f6e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #4a6f86;
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        /* events grid */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.8rem;
+            margin-top: 1rem;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.3rem 1.5rem 1.6rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.25s ease;
+            border: 1px solid #e2edf2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 28px rgba(0, 0, 0, 0.08);
+            border-color: #cde3ed;
+        }
+
+        .event-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #0a2e42;
+            line-height: 1.3;
+        }
+
+        .event-details {
+            font-size: 0.9rem;
+            color: #2c5a74;
+            margin: 0.6rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .event-details span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge-venue {
+            background: #eef2f5;
+            padding: 0.25rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            width: fit-content;
+        }
+
+        .checkin-btn {
+            background: #1b6b50;
+            color: white;
+            border: none;
+            padding: 0.75rem 0;
+            border-radius: 40px;
+            font-weight: 600;
+            margin-top: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.95rem;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .checkin-btn:hover {
+            background: #0f5540;
+            transform: scale(0.98);
+        }
+
+        .checked-badge {
+            background: #e0f0ea;
+            color: #1b6b50;
+            text-align: center;
+            padding: 0.7rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* QR Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-card {
+            background: white;
+            max-width: 400px;
+            width: 90%;
+            border-radius: 2rem;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.25);
+            animation: fadeInUp 0.2s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            margin: 1.2rem 0;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 1rem;
+        }
+
+        .modal-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.3rem;
+            color: #0a2e42;
+        }
+
+        .modal-card p {
+            color: #4a6f86;
+            font-size: 0.85rem;
+        }
+
+        .modal-close {
+            margin-top: 1rem;
+            background: #eef3f7;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #e2e9ef;
+        }
+
+        .qr-note {
+            font-size: 0.75rem;
+            color: #6c8ea0;
+            margin-top: 0.5rem;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2e3a;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            z-index: 1100;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            font-size: 0.75rem;
+            color: #7f9ab0;
+        }
+
+        hr {
+            margin: 0.75rem 0;
+            border-color: #e2edf2;
+        }
+
+        .event-footer {
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🎟️ Event Check-In System</h1>
+        <div class="subtitle">Scan QR code → Fill Google Form → Complete registration</div>
+    </div>
+    <div class="events-grid" id="eventsGrid"></div>
+    <footer>🔍 Scan the QR code with your phone camera to access the registration form</footer>
+</div>
+
+<!-- QR Modal -->
+<div id="qrModal" class="modal">
+    <div class="modal-card">
+        <h3 id="qrEventTitle">Event Name</h3>
+        <p>📱 Scan this QR code to register</p>
+        <div id="qrcode" class="qr-container"></div>
+        <p class="qr-note">⬆️ Use your camera or any QR scanner<br>You will be directed to Google Forms</p>
+        <button class="modal-close" id="closeQrModal">Close</button>
+    </div>
+</div>
+
+<div id="toastMsg" class="toast-msg">✨ QR code generated</div>
+
+<script>
+    // ==================== 9 UPCOMING EVENTS ====================
+    // Based on the provided images: Tech Innovation Summit, Digital Marketing Workshop,
+    // Leadership & Team Building, AI & Machine Learning Bootcamp, Entrepreneurship Talk,
+    // UI/UX Design Conference + 3 additional to complete 9 events.
+    const EVENTS = [
+        { 
+            id: 1, 
+            name: "Tech Innovation Summit", 
+            date: "Dec 10, 2025", 
+            time: "10:00 AM - 12:00 PM", 
+            venue: "Online (Zoom)" 
+        },
+        { 
+            id: 2, 
+            name: "Digital Marketing Workshop", 
+            date: "Dec 11, 2025", 
+            time: "2:00 PM - 4:00 PM", 
+            venue: "Online (Zoom)" 
+        },
+        { 
+            id: 3, 
+            name: "Leadership & Team Building", 
+            date: "Dec 12, 2025", 
+            time: "9:00 AM - 11:00 AM", 
+            venue: "Online (Google Meet)" 
+        },
+        { 
+            id: 4, 
+            name: "AI & Machine Learning Bootcamp", 
+            date: "Dec 14, 2025", 
+            time: "1:00 PM - 3:00 PM", 
+            venue: "Online (Zoom)" 
+        },
+        { 
+            id: 5, 
+            name: "Entrepreneurship Talk", 
+            date: "Dec 15, 2025", 
+            time: "5:00 PM - 6:30 PM", 
+            venue: "Online (Zoom)" 
+        },
+        { 
+            id: 6, 
+            name: "UI/UX Design Conference", 
+            date: "Dec 16, 2025", 
+            time: "7:00 PM - 9:00 PM", 
+            venue: "Online (Google Meet)" 
+        },
+        { 
+            id: 7, 
+            name: "Data Science Symposium", 
+            date: "Dec 17, 2025", 
+            time: "11:00 AM - 1:00 PM", 
+            venue: "Online (Zoom)" 
+        },
+        { 
+            id: 8, 
+            name: "Future of Web3 Summit", 
+            date: "Dec 18, 2025", 
+            time: "3:00 PM - 5:00 PM", 
+            venue: "Online (Zoom)" 
+        },
+        { 
+            id: 9, 
+            name: "Agile & DevOps Masterclass", 
+            date: "Dec 19, 2025", 
+            time: "9:30 AM - 12:30 PM", 
+            venue: "Online (Google Meet)" 
+        }
+    ];
+
+    // Google Form URL (your existing form)
+    const GOOGLE_FORM_URL = "https://forms.gle/SuBeLNLzvHvH42xt6";
+
+    // In-memory check-in status (per session only, no local storage, no Google login)
+    // This resets on page refresh. The requirement: no login, no local storage.
+    let checkedInEvents = new Set(); // stores event IDs that have been checked-in during this session
+
+    // Helper: show temporary message
+    function showToast(message, duration = 2500) {
+        const toast = document.getElementById('toastMsg');
+        toast.textContent = message;
+        toast.style.opacity = '1';
+        setTimeout(() => {
+            toast.style.opacity = '0';
+        }, duration);
+    }
+
+    // Generate and display QR modal for a specific event
+    function showQRModal(event) {
+        const modal = document.getElementById('qrModal');
+        const titleSpan = document.getElementById('qrEventTitle');
+        titleSpan.textContent = event.name;
+        
+        // Clear previous QR code
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = "";
+        
+        // Create QR code pointing to the Google Form
+        // The QR will directly open the Google Form link
+        const qrData = GOOGLE_FORM_URL;
+        
+        try {
+            // Generate QR code using QRCode.js library
+            new QRCode(qrContainer, {
+                text: qrData,
+                width: 200,
+                height: 200,
+                colorDark: "#1b4f6e",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+            showToast(`📱 QR ready for ${event.name}`, 1500);
+        } catch (error) {
+            console.error("QR generation error:", error);
+            qrContainer.innerHTML = `<div style="font-size:14px;color:#c0392b;">⚠️ Could not generate QR. <br> <a href="${GOOGLE_FORM_URL}" target="_blank" style="color:#1b6b50;">Click here to open form</a></div>`;
+        }
+        
+        modal.style.display = 'flex';
+    }
+
+    // Mark event as checked-in for current session (visual feedback only)
+    function markAsCheckedIn(eventId, eventName) {
+        if (!checkedInEvents.has(eventId)) {
+            checkedInEvents.add(eventId);
+            showToast(`✅ Check-in recorded for "${eventName}"`, 2000);
+            renderEvents(); // re-render to show updated status
+        } else {
+            showToast(`ℹ️ Already checked-in for ${eventName}`, 1500);
+        }
+    }
+
+    // Check if an event is already checked-in (session only)
+    function isEventCheckedIn(eventId) {
+        return checkedInEvents.has(eventId);
+    }
+
+    // Render all event cards
+    function renderEvents() {
+        const grid = document.getElementById('eventsGrid');
+        if (!grid) return;
+        grid.innerHTML = "";
+        
+        EVENTS.forEach(event => {
+            const checkedIn = isEventCheckedIn(event.id);
+            const card = document.createElement('div');
+            card.className = 'event-card';
+            
+            // Build details HTML
+            const detailsHtml = `
+                <div class="event-details">
+                    <span>📅 ${event.date}</span>
+                    <span>⏰ ${event.time}</span>
+                    <span class="badge-venue">📍 ${event.venue}</span>
+                </div>
+            `;
+            
+            let actionHtml = '';
+            if (!checkedIn) {
+                actionHtml = `
+                    <button class="checkin-btn" data-id="${event.id}">
+                        🎟️ Check In
+                    </button>
+                `;
+            } else {
+                actionHtml = `
+                    <div class="checked-badge">
+                        ✅ Checked In ✓
+                    </div>
+                `;
+            }
+            
+            card.innerHTML = `
+                <div class="event-title">${escapeHtml(event.name)}</div>
+                ${detailsHtml}
+                <div class="event-footer">
+                    ${actionHtml}
+                </div>
+            `;
+            
+            if (!checkedIn) {
+                const btn = card.querySelector('.checkin-btn');
+                if (btn) {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showQRModal(event);
+                        // We don't mark as checked-in until the user submits the form.
+                        // But to provide a smooth flow, the user will scan QR, fill Google Form,
+                        // and after submission, they can manually confirm or the system will assume.
+                        // Since there's no backend, we add an optional helper: after scanning, we ask?
+                        // For better UX: after QR shown, we don't auto-mark; user must click a separate confirm?
+                        // But the requirement says "Then after scan QR, form need to fill Name and Email and submit."
+                        // So the check-in status should be updated AFTER submission. Since we can't track Google Form submission automatically,
+                        // we provide an additional way for users to confirm they've submitted. To respect "no login, no local storage",
+                        // we will add a small post-submit confirmation button inside QR modal? 
+                        // However the clean approach: after scanning QR and submitting form, the user can click "I've submitted" to mark check-in.
+                        // This satisfies the flow: QR -> fill form -> submit -> confirm.
+                        // We'll add a smart button in the QR modal: "✅ I completed the registration form"
+                    });
+                }
+            }
+            
+            grid.appendChild(card);
+        });
+    }
+    
+    // Simple escape to prevent XSS
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // Track which event is currently being processed (for the post-submit confirmation)
+    let currentEventForConfirmation = null;
+    
+    // Enhanced QR modal: Add a confirmation button after scanning/submitting form
+    // This ensures the user can mark the event as checked-in after filling out the Google Form.
+    function showQRModalWithConfirmation(event) {
+        const modal = document.getElementById('qrModal');
+        const titleSpan = document.getElementById('qrEventTitle');
+        titleSpan.textContent = event.name;
+        
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = "";
+        
+        // QR code with Google Form link
+        const qrData = GOOGLE_FORM_URL;
+        
+        try {
+            new QRCode(qrContainer, {
+                text: qrData,
+                width: 200,
+                height: 200,
+                colorDark: "#1b4f6e",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        } catch (error) {
+            qrContainer.innerHTML = `<div style="font-size:13px;">⚠️ QR error. <a href="${GOOGLE_FORM_URL}" target="_blank">Open Form</a></div>`;
+        }
+        
+        // Remove any existing confirm button to avoid duplicates
+        const existingConfirmBtn = document.getElementById('confirmSubmitBtn');
+        if (existingConfirmBtn) existingConfirmBtn.remove();
+        
+        // Create "I've submitted the form" button
+        const confirmBtn = document.createElement('button');
+        confirmBtn.id = 'confirmSubmitBtn';
+        confirmBtn.textContent = '✅ I completed the registration form';
+        confirmBtn.style.marginTop = '12px';
+        confirmBtn.style.padding = '0.7rem 1rem';
+        confirmBtn.style.backgroundColor = '#1b6b50';
+        confirmBtn.style.color = 'white';
+        confirmBtn.style.border = 'none';
+        confirmBtn.style.borderRadius = '2rem';
+        confirmBtn.style.fontWeight = '600';
+        confirmBtn.style.cursor = 'pointer';
+        confirmBtn.style.width = '100%';
+        confirmBtn.style.fontSize = '0.85rem';
+        confirmBtn.style.transition = '0.2s';
+        
+        confirmBtn.onmouseover = () => { confirmBtn.style.backgroundColor = '#0f5540'; };
+        confirmBtn.onmouseout = () => { confirmBtn.style.backgroundColor = '#1b6b50'; };
+        
+        confirmBtn.onclick = () => {
+            // Mark this event as checked-in
+            if (!checkedInEvents.has(event.id)) {
+                checkedInEvents.add(event.id);
+                showToast(`🎉 Successfully checked-in for ${event.name}!`, 2500);
+                renderEvents();
+                // Close modal after confirmation
+                modal.style.display = 'none';
+                // Clean up
+                currentEventForConfirmation = null;
+            } else {
+                showToast(`You already checked-in for ${event.name}`, 1500);
+                modal.style.display = 'none';
+            }
+        };
+        
+        // Append button inside modal-card
+        const modalCard = document.querySelector('#qrModal .modal-card');
+        modalCard.appendChild(confirmBtn);
+        
+        // Also ensure close button resets
+        const closeBtn = document.getElementById('closeQrModal');
+        // Remove old listener to avoid duplicates, but we can keep new one
+        const newCloseBtn = closeBtn.cloneNode(true);
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+        newCloseBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            const btnToRemove = document.getElementById('confirmSubmitBtn');
+            if (btnToRemove) btnToRemove.remove();
+        });
+        
+        modal.style.display = 'flex';
+        currentEventForConfirmation = event.id;
+    }
+    
+    // Update the QR modal call to use the enhanced version
+    // Override the original showQRModal to use enhanced version
+    window.showQRModal = showQRModalWithConfirmation;
+    
+    // Re-attach event listeners for dynamic buttons after render
+    function attachGlobalEventListeners() {
+        // Since buttons are re-rendered dynamically, we use event delegation
+        const grid = document.getElementById('eventsGrid');
+        if (grid) {
+            grid.addEventListener('click', (e) => {
+                const btn = e.target.closest('.checkin-btn');
+                if (btn && btn.getAttribute('data-id')) {
+                    const eventId = parseInt(btn.getAttribute('data-id'));
+                    const event = EVENTS.find(ev => ev.id === eventId);
+                    if (event && !isEventCheckedIn(event.id)) {
+                        e.preventDefault();
+                        showQRModalWithConfirmation(event);
+                    } else if (event && isEventCheckedIn(event.id)) {
+                        showToast(`Already checked-in for ${event.name}`, 1500);
+                    }
+                }
+            });
+        }
+    }
+    
+    // Manual close modal handlers
+    function initModalHandlers() {
+        const modal = document.getElementById('qrModal');
+        const closeModalBtn = document.getElementById('closeQrModal');
+        
+        if (closeModalBtn) {
+            // Remove existing listeners and add fresh one
+            const newClose = closeModalBtn.cloneNode(true);
+            closeModalBtn.parentNode.replaceChild(newClose, closeModalBtn);
+            newClose.addEventListener('click', () => {
+                modal.style.display = 'none';
+                const confirmBtn = document.getElementById('confirmSubmitBtn');
+                if (confirmBtn) confirmBtn.remove();
+            });
+        }
+        
+        // Close when clicking outside modal content
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                const confirmBtn = document.getElementById('confirmSubmitBtn');
+                if (confirmBtn) confirmBtn.remove();
+            }
+        });
+    }
+    
+    // Reset checked-in set on page refresh (no persistence by design)
+    // But we also want to ensure that if user accidentally refreshes, it's a clean slate.
+    // That's exactly the requirement: no local storage, no google login.
+    
+    // Helper: Ensure that after form submission, users can confirm easily.
+    // Provide also a global function for debugging but not needed.
+    
+    // Render initial events and attach delegation
+    function init() {
+        renderEvents();
+        attachGlobalEventListeners();
+        initModalHandlers();
+    }
+    
+    // Start the application
+    init();
+    
+    // Additional minor improvement: Add a small helper instruction for users
+    // In case they miss the confirmation button, they can click again.
+    console.log("Event Check-in System Ready | QR codes link to Google Form | No login | No local storage");
+</script>
+</body>
+</html>
