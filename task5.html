@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Tech Skill Exams | Multi-page Platform</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fb;
+            color: #0f172a;
+            line-height: 1.4;
+        }
+
+        /* Page container */
+        .page {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            display: none;
+        }
+
+        .page.active-page {
+            display: block;
+        }
+
+        /* Header */
+        .main-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .main-header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #2d3a4e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .main-header p {
+            color: #475569;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            justify-content: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        .filter-btn {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #1e293b;
+        }
+
+        .filter-btn.active {
+            background: #1e293b;
+            color: white;
+            border-color: #1e293b;
+        }
+
+        .filter-btn:hover:not(.active) {
+            background: #eef2ff;
+            border-color: #94a3b8;
+        }
+
+        /* Exam Cards Grid */
+        .exam-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .exam-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .exam-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.1);
+        }
+
+        .exam-badge {
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            width: fit-content;
+            margin-bottom: 0.8rem;
+            background: #eef2ff;
+            color: #1e40af;
+        }
+
+        .exam-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            color: #0f172a;
+        }
+
+        .exam-desc {
+            color: #475569;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+            flex: 1;
+        }
+
+        .btn-take {
+            background: #1e293b;
+            color: white;
+            border: none;
+            padding: 0.7rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            width: fit-content;
+        }
+
+        .btn-take:hover {
+            background: #0f172a;
+            transform: scale(0.98);
+        }
+
+        /* Navigation buttons */
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .nav-secondary {
+            background: #eef2ff;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Exam Page (Taking exam) */
+        .exam-container {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .exam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #eef2ff;
+        }
+
+        .question-counter {
+            background: #eef2ff;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .question-text {
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin: 1.5rem 0 1.2rem;
+            line-height: 1.4;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 1.5rem 0 2rem;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #f8fafc;
+            padding: 0.9rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid #e2edf7;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .option-item:hover {
+            background: #eef4ff;
+            border-color: #b9d0f0;
+        }
+
+        .option-item input {
+            width: 18px;
+            height: 18px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+
+        .option-item label {
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .exam-nav {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn-primary {
+            background: #1e293b;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            background: #eef2ff;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-primary:disabled, .btn-secondary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Warning message */
+        .warning-message {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.6rem 1rem;
+            border-radius: 0.75rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            text-align: center;
+            border-left: 4px solid #f59e0b;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Result Page */
+        .result-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+
+        .score-circle {
+            background: #f1f5f9;
+            border-radius: 2rem;
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .big-score {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .percentage {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2563eb;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        /* Review Page */
+        .review-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .review-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e9eef3;
+            margin-bottom: 0.5rem;
+        }
+
+        .review-question {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .correct-badge {
+            color: #15803d;
+            font-weight: 600;
+        }
+
+        .wrong-badge {
+            color: #b91c1c;
+            font-weight: 600;
+        }
+
+        .answer-detail {
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+            color: #334155;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            font-size: 0.75rem;
+            color: #5b6e8c;
+        }
+
+        @media (max-width: 640px) {
+            .page {
+                padding: 1rem;
+            }
+            .exam-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- PAGE 1: HOME (Exam Selection with Filter) -->
+<div id="homePage" class="page active-page">
+    <div class="main-header">
+        <h1>📘 Tech Skill Exams</h1>
+        <p>Test your programming knowledge — from fundamentals to advanced</p>
+    </div>
+
+    <!-- Filter Bar: All | Java | Python | C++ -->
+    <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="Java">Java</button>
+        <button class="filter-btn" data-filter="Python">Python</button>
+        <button class="filter-btn" data-filter="C++">C++</button>
+    </div>
+
+    <div id="examGrid" class="exam-grid"></div>
+    <footer>✨ Select any exam to begin — each exam contains 10 multiple-choice questions</footer>
+</div>
+
+<!-- PAGE 2: TAKE EXAM (Active exam taking) -->
+<div id="examPage" class="page">
+    <div class="exam-container">
+        <div class="exam-header">
+            <h2 id="examPageTitle">Java Basic Exam</h2>
+            <span class="question-counter" id="examCounter">Question 1/10</span>
+        </div>
+        <div id="examQuestionArea">
+            <!-- dynamic question -->
+        </div>
+        <div class="exam-nav">
+            <button class="btn-secondary" id="examPrevBtn">◀ Previous</button>
+            <button class="btn-primary" id="examNextBtn">Next ▶</button>
+        </div>
+        <div id="warningContainer"></div>
+        <div style="margin-top: 1rem; text-align: center;">
+            <button class="btn-secondary" id="exitToHomeBtn">🏠 Exit to Exams</button>
+        </div>
+    </div>
+</div>
+
+<!-- PAGE 3: RESULT PAGE (Score & Review summary) -->
+<div id="resultPage" class="page">
+    <div class="result-card">
+        <h2 id="resultTitle">Exam Completed!</h2>
+        <div class="score-circle">
+            <div class="big-score" id="resultScore">0 / 0</div>
+            <div class="percentage" id="resultPercentage">0%</div>
+        </div>
+        <div class="action-buttons">
+            <button class="btn-primary" id="reviewAnswersBtn">📋 Review Exam</button>
+            <button class="btn-secondary" id="homeFromResultBtn">🏠 Back to Exams</button>
+        </div>
+    </div>
+</div>
+
+<!-- PAGE 4: REVIEW PAGE (Detailed answers) -->
+<div id="reviewPage" class="page">
+    <div class="review-card">
+        <h2 id="reviewTitle">Answer Review</h2>
+        <div id="reviewContent" style="margin: 1.5rem 0;"></div>
+        <div class="action-buttons">
+            <button class="btn-secondary" id="backToResultFromReviewBtn">← Back to Results</button>
+            <button class="btn-secondary" id="homeFromReviewBtn">🏠 Home</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- EXAM DATABASE (8 exams, filter by language) ----------
+    function makeQuestion(text, options, correctIndex) {
+        return { text, options, correctIndex };
+    }
+
+    // Java Basic
+    const javaBasicQs = [
+        makeQuestion("What is JVM in Java?", ["Java Virtual Machine", "Java Variable Method", "Java Very Much", "None of the above"], 0),
+        makeQuestion("Which of these is NOT a primitive type in Java?", ["int", "float", "String", "boolean"], 2),
+        makeQuestion("What does 'public static void main(String[] args)' represent?", ["Entry point of a Java program", "A class constructor", "A final variable", "A loop structure"], 0),
+        makeQuestion("Which keyword is used for inheritance in Java?", ["super", "this", "extends", "implements"], 2),
+        makeQuestion("What is the size of an 'int' in Java?", ["16 bits", "32 bits", "64 bits", "Platform dependent"], 1),
+        makeQuestion("Which operator creates an object in Java?", ["new", "malloc", "alloc", "create"], 0),
+        makeQuestion("Default value of a boolean variable in Java is:", ["true", "false", "null", "0"], 1),
+        makeQuestion("Which package contains the ArrayList class?", ["java.util", "java.lang", "java.io", "java.collections"], 0),
+        makeQuestion("What is method overloading?", ["Same method name, different parameters", "Same method name, same parameters", "Different method names", "None of the above"], 0),
+        makeQuestion("Which access modifier restricts visibility to the same class only?", ["public", "protected", "private", "default"], 2)
+    ];
+    
+    // Java Intermediate
+    const javaInterQs = [
+        makeQuestion("Which interface has no methods (marker interface)?", ["Marker interface", "Functional interface", "Abstract class", "Normal class"], 0),
+        makeQuestion("Default implementation of equals() in Object class:", ["Compares references", "Compares values", "Compares hashcodes", "Always returns true"], 0),
+        makeQuestion("Which collection maintains insertion order?", ["ArrayList", "HashSet", "TreeSet", "HashMap"], 0),
+        makeQuestion("Polymorphism means:", ["Many forms", "Single inheritance", "Encapsulation", "Data hiding"], 0),
+        makeQuestion("Which keyword prevents method overriding?", ["final", "static", "abstract", "private"], 0),
+        makeQuestion("Difference between abstract class and interface?", ["Abstract class can have state, interface cannot", "They are same", "Interface can have constructor", "No difference"], 0),
+        makeQuestion("What does 'super' refer to?", ["Parent class object", "Current class instance", "Static context", "Global variable"], 0),
+        makeQuestion("Which is NOT a Java Collection?", ["Map", "Set", "List", "Array"], 3),
+        makeQuestion("Default initial capacity of HashMap:", ["16", "10", "8", "32"], 0),
+        makeQuestion("What does try-with-resources do?", ["Auto-closes resources", "Exception logging", "Synchronization", "Memory management"], 0)
+    ];
+    
+    // Python Basic
+    const pythonBasicQs = [
+        makeQuestion("How are code blocks defined in Python?", ["Indentation", "Curly braces", "Parentheses", "Keywords"], 0),
+        makeQuestion("What is the output of print(2 ** 3)?", ["6", "8", "9", "Error"], 1),
+        makeQuestion("Which data type is immutable in Python?", ["list", "dict", "tuple", "set"], 2),
+        makeQuestion("How to define a function in Python?", ["function myFunc():", "def myFunc():", "create myFunc():", "func myFunc():"], 1),
+        makeQuestion("Which is the correct way to create a variable?", ["x = 5", "int x = 5", "x := 5", "var x = 5"], 0),
+        makeQuestion("Which loop is used to iterate over a sequence?", ["for", "while", "do-while", "repeat"], 0),
+        makeQuestion("What does len() do?", ["Returns length of an object", "Converts to lowercase", "Rounds a number", "Prints value"], 0),
+        makeQuestion("Which keyword imports modules?", ["import", "include", "using", "require"], 0),
+        makeQuestion("Result of 'Hello' + 'World' is:", ["HelloWorld", "Hello World", "Error", "Hello+World"], 0),
+        makeQuestion("Which is a mutable data type?", ["tuple", "string", "list", "int"], 2)
+    ];
+    
+    // Python Intermediate
+    const pythonInterQs = [
+        makeQuestion("What is list comprehension?", ["Concise way to create lists", "Loop inside list", "Dictionary method", "Lambda function"], 0),
+        makeQuestion("How to handle exceptions in Python?", ["try-except", "try-catch", "catch-throw", "raise-handle"], 0),
+        makeQuestion("What does 'yield' do?", ["Creates a generator", "Returns a single value", "Stops execution", "Creates list"], 0),
+        makeQuestion("What is a decorator?", ["Function that modifies another function", "Class method", "Wrapper class", "Variable annotation"], 0),
+        makeQuestion("Which module is used for regular expressions?", ["re", "regex", "pyre", "regexp"], 0),
+        makeQuestion("Output of set([1,2,2,3]) is:", ["{1,2,3}", "[1,2,3]", "(1,2,3)", "Error"], 0),
+        makeQuestion("What is a lambda function?", ["Anonymous function", "Named function", "Built-in function", "Class method"], 0),
+        makeQuestion("Purpose of __init__ method:", ["Constructor", "Destructor", "Initializer", "Callable"], 0),
+        makeQuestion("Import a specific function from module:", ["from module import func", "import func from module", "using module.func", "import module as func"], 0),
+        makeQuestion("Deep copy vs shallow copy:", ["Deep copy duplicates nested objects", "No difference", "Shallow copies everything", "Deep copy is faster"], 0)
+    ];
+    
+    // Python Advanced
+    const pythonAdvQs = [
+        makeQuestion("What is a metaclass?", ["Class of a class", "Abstract class", "Decorator factory", "Context manager"], 0),
+        makeQuestion("What is GIL in CPython?", ["Global Interpreter Lock", "General Input Library", "Graphic Interface Layer", "None"], 0),
+        makeQuestion("What is __slots__ used for?", ["Memory optimization", "Define methods", "Create properties", "Exception handling"], 0),
+        makeQuestion("What do decorators do?", ["Modify function behavior", "Data storage", "Loop control", "Inheritance"], 0),
+        makeQuestion("What is a context manager?", ["Supports 'with' statement", "Exception handler", "Loop manager", "Memory manager"], 0),
+        makeQuestion("@staticmethod vs @classmethod:", ["classmethod receives class", "Both same", "staticmethod receives instance", "None"], 0),
+        makeQuestion("What is asyncio?", ["Asynchronous I/O library", "Threading library", "Math library", "GUI library"], 0),
+        makeQuestion("What are generators?", ["Iterators using yield", "List comprehensions", "Functions with return", "Classes"], 0),
+        makeQuestion("What does __call__ method do?", ["Makes object callable", "Constructor", "Destructor", "Attribute access"], 0),
+        makeQuestion("What is monkey patching?", ["Modify code at runtime", "Debugging tool", "Type checking", "Performance optimization"], 0)
+    ];
+    
+    // C++ Basic
+    const cppBasicQs = [
+        makeQuestion("Correct syntax to output 'Hello' in C++?", ["cout << \"Hello\";", "print(\"Hello\");", "Console.WriteLine();", "printf(\"Hello\");"], 0),
+        makeQuestion("Which operator is used for dynamic memory allocation?", ["new", "malloc", "alloc", "create"], 0),
+        makeQuestion("What is a reference in C++?", ["Alias to a variable", "Pointer to address", "Constant value", "Function call"], 0),
+        makeQuestion("Which header is required for std::vector?", ["<vector>", "<list>", "<array>", "<deque>"], 0),
+        makeQuestion("Size of 'int' in 32-bit C++ is typically:", ["4 bytes", "2 bytes", "8 bytes", "Depends"], 0),
+        makeQuestion("Which keywords handle exceptions?", ["try", "catch", "throw", "All of the above"], 3),
+        makeQuestion("Default access specifier for class members is:", ["private", "public", "protected", "internal"], 0),
+        makeQuestion("Which loop guarantees at least one execution?", ["do-while", "while", "for", "foreach"], 0),
+        makeQuestion("What does '&' signify in variable declaration?", ["Address of", "Reference", "Pointer", "Bitwise AND"], 1),
+        makeQuestion("Entry point of a C++ program:", ["main()", "start()", "begin()", "run()"], 0)
+    ];
+    
+    // C++ Intermediate
+    const cppInterQs = [
+        makeQuestion("What is a constructor?", ["Special method to initialize objects", "Destroys object", "Allocates memory", "None"], 0),
+        makeQuestion("What does 'this' pointer point to?", ["Current object", "Parent object", "Static context", "Global pointer"], 0),
+        makeQuestion("What is a virtual function?", ["Function that can be overridden", "Function with default", "Static function", "Friend function"], 0),
+        makeQuestion("What is a pure virtual function?", ["Virtual function with =0", "Abstract function", "Inline function", "None"], 0),
+        makeQuestion("What are templates used for?", ["Generic programming", "Inheritance", "Polymorphism", "Encapsulation"], 0),
+        makeQuestion("Which STL container is a double-ended queue?", ["deque", "queue", "vector", "list"], 0),
+        makeQuestion("What is a smart pointer?", ["RAII wrapper for raw pointer", "Normal pointer", "Integer pointer", "Void pointer"], 0),
+        makeQuestion("What does 'friend' keyword do?", ["Grants access to private members", "Creates friendship class", "Inheritance", "Polymorphism"], 0),
+        makeQuestion("int a=5; int &b=a; b=10; After this, a is:", ["10", "5", "Compile error", "Undefined"], 0),
+        makeQuestion("Which feature provides compile-time polymorphism?", ["Function overloading", "virtual", "override", "final"], 0)
+    ];
+    
+    // C++ Advanced
+    const cppAdvQs = [
+        makeQuestion("What is RAII?", ["Resource Acquisition Is Initialization", "Runtime allocation", "Return type", "Reference type"], 0),
+        makeQuestion("What are move semantics?", ["Transfer ownership of resources", "Copy data", "Allocate new memory", "Delete pointer"], 0),
+        makeQuestion("What is std::unique_ptr?", ["Exclusive ownership smart pointer", "Shared pointer", "Weak pointer", "Raw pointer"], 0),
+        makeQuestion("What is a lambda in C++?", ["Anonymous function object", "Template function", "Macro", "Inline function"], 0),
+        makeQuestion("What does 'decltype' do?", ["Deduces type of expression", "Declares variable", "Casts type", "Checks type"], 0),
+        makeQuestion("What is perfect forwarding?", ["Preserves value category", "Forward all arguments", "Template specialization", "None"], 0),
+        makeQuestion("What is SFINAE?", ["Substitution Failure Is Not An Error", "Template meta", "Concept", "Inheritance"], 0),
+        makeQuestion("Purpose of constexpr:", ["Compile-time evaluation", "Constant variable", "Mutable constant", "Runtime constant"], 0),
+        makeQuestion("Which STL algorithm sorts a range?", ["std::sort", "std::qsort", "std::stable_sort", "All of them"], 0),
+        makeQuestion("What is a concept in C++20?", ["Constraints on templates", "Class design", "Interface", "None"], 0)
+    ];
+    
+    const examsCatalog = [
+        { id: "java_basic", title: "Java Basic Exam", desc: "Test your fundamental knowledge of Java syntax and concepts.", language: "Java", questions: javaBasicQs },
+        { id: "java_intermediate", title: "Java Intermediate Exam", desc: "Challenge yourself with object-oriented and collection-based questions.", language: "Java", questions: javaInterQs },
+        { id: "python_basic", title: "Python Basic Exam", desc: "Start your Python journey with variables, loops, and conditions.", language: "Python", questions: pythonBasicQs },
+        { id: "python_intermediate", title: "Python Intermediate Exam", desc: "Explore data structures, functions, and modules in Python.", language: "Python", questions: pythonInterQs },
+        { id: "python_advanced", title: "Python Advanced Exam", desc: "Master advanced Python topics including OOP and decorators.", language: "Python", questions: pythonAdvQs },
+        { id: "cpp_basic", title: "C++ Basic Exam", desc: "Learn the basics of C++ syntax, variables, and control structures.", language: "C++", questions: cppBasicQs },
+        { id: "cpp_intermediate", title: "C++ Intermediate Exam", desc: "Improve your understanding of classes, pointers, and templates.", language: "C++", questions: cppInterQs },
+        { id: "cpp_advanced", title: "C++ Advanced Exam", desc: "Dive into memory management, STL, and advanced object-oriented design.", language: "C++", questions: cppAdvQs }
+    ];
+    
+    // ---------- Global State ----------
+    let currentActiveExam = null;
+    let currentUserAnswers = [];
+    let currentQuestionIdx = 0;
+    let currentResult = null;
+    
+    // ---------- Page navigation ----------
+    const pages = {
+        home: document.getElementById("homePage"),
+        exam: document.getElementById("examPage"),
+        result: document.getElementById("resultPage"),
+        review: document.getElementById("reviewPage")
+    };
+    
+    function showPage(pageName) {
+        Object.keys(pages).forEach(p => pages[p].classList.remove("active-page"));
+        pages[pageName].classList.add("active-page");
+        // Clear any warnings when switching pages
+        const warningContainer = document.getElementById("warningContainer");
+        if (warningContainer) warningContainer.innerHTML = "";
+    }
+    
+    function showWarning(message) {
+        const warningContainer = document.getElementById("warningContainer");
+        if (warningContainer) {
+            warningContainer.innerHTML = `<div class="warning-message">⚠️ ${message}</div>`;
+            // Auto-hide after 2.5 seconds
+            setTimeout(() => {
+                if (warningContainer.innerHTML.includes(message)) {
+                    warningContainer.innerHTML = "";
+                }
+            }, 2500);
+        }
+    }
+    
+    // ---------- Render Home with Filter ----------
+    let currentFilter = "all";
+    
+    function renderHomePage() {
+        const grid = document.getElementById("examGrid");
+        const filtered = examsCatalog.filter(exam => currentFilter === "all" || exam.language === currentFilter);
+        grid.innerHTML = "";
+        filtered.forEach(exam => {
+            const card = document.createElement("div");
+            card.className = "exam-card";
+            card.innerHTML = `
+                <span class="exam-badge">${exam.language}</span>
+                <div class="exam-title">${escapeHtml(exam.title)}</div>
+                <div class="exam-desc">${escapeHtml(exam.desc)}</div>
+                <button class="btn-take" data-id="${exam.id}">📘 Take Exam</button>
+            `;
+            grid.appendChild(card);
+        });
+        document.querySelectorAll(".btn-take").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const id = btn.getAttribute("data-id");
+                const exam = examsCatalog.find(ex => ex.id === id);
+                if (exam) startExam(exam);
+            });
+        });
+    }
+    
+    function startExam(exam) {
+        currentActiveExam = { ...exam, questions: exam.questions.map(q => ({ ...q })) };
+        currentUserAnswers = new Array(currentActiveExam.questions.length).fill(null);
+        currentQuestionIdx = 0;
+        currentResult = null;
+        document.getElementById("examPageTitle").innerText = currentActiveExam.title;
+        // Clear any warning
+        document.getElementById("warningContainer").innerHTML = "";
+        renderExamQuestion();
+        showPage("exam");
+    }
+    
+    function renderExamQuestion() {
+        const q = currentActiveExam.questions[currentQuestionIdx];
+        const counterSpan = document.getElementById("examCounter");
+        counterSpan.innerText = `Question ${currentQuestionIdx+1} / ${currentActiveExam.questions.length}`;
+        const optionsHtml = q.options.map((opt, idx) => {
+            const isChecked = (currentUserAnswers[currentQuestionIdx] === idx);
+            return `
+                <div class="option-item" data-opt-index="${idx}">
+                    <input type="radio" name="questionOption" value="${idx}" id="opt_${idx}" ${isChecked ? 'checked' : ''}>
+                    <label for="opt_${idx}">${escapeHtml(opt)}</label>
+                </div>
+            `;
+        }).join('');
+        const html = `
+            <div class="question-text">${escapeHtml(q.text)}</div>
+            <div class="options-list" id="examOptionsList">
+                ${optionsHtml}
+            </div>
+        `;
+        document.getElementById("examQuestionArea").innerHTML = html;
+        
+        // attach radio listeners to update answers immediately
+        document.querySelectorAll('.option-item').forEach(item => {
+            const radio = item.querySelector('input');
+            const idx = parseInt(item.getAttribute('data-opt-index'));
+            radio.addEventListener('change', () => {
+                if (radio.checked) {
+                    currentUserAnswers[currentQuestionIdx] = idx;
+                    // Clear any warning when user selects an answer
+                    const warningContainer = document.getElementById("warningContainer");
+                    if (warningContainer) warningContainer.innerHTML = "";
+                }
+            });
+        });
+        
+        // update prev/next buttons text
+        const prevBtn = document.getElementById("examPrevBtn");
+        const nextBtn = document.getElementById("examNextBtn");
+        prevBtn.disabled = (currentQuestionIdx === 0);
+        if (currentQuestionIdx === currentActiveExam.questions.length - 1) {
+            nextBtn.innerText = "✅ Submit Exam";
+        } else {
+            nextBtn.innerText = "Next ▶";
+        }
+    }
+    
+    function handleNextOrSubmit() {
+        // Check if current question has an answer selected
+        const currentAnswer = currentUserAnswers[currentQuestionIdx];
+        if (currentAnswer === null || currentAnswer === undefined) {
+            showWarning("Please select an answer before proceeding to the next question.");
+            return;
+        }
+        
+        if (currentQuestionIdx === currentActiveExam.questions.length - 1) {
+            // Submit exam - compute result
+            let correct = 0;
+            currentActiveExam.questions.forEach((q, idx) => {
+                const ans = currentUserAnswers[idx];
+                if (ans !== null && ans === q.correctIndex) correct++;
+            });
+            const total = currentActiveExam.questions.length;
+            const percentage = Math.round((correct / total) * 100);
+            currentResult = { score: correct, total, percentage };
+            // show result page
+            document.getElementById("resultTitle").innerText = `${currentActiveExam.title} - Completed!`;
+            document.getElementById("resultScore").innerText = `${currentResult.score} / ${currentResult.total}`;
+            document.getElementById("resultPercentage").innerText = `${currentResult.percentage}%`;
+            showPage("result");
+        } else {
+            currentQuestionIdx++;
+            renderExamQuestion();
+        }
+    }
+    
+    function handlePrevQuestion() {
+        if (currentQuestionIdx > 0) {
+            currentQuestionIdx--;
+            renderExamQuestion();
+        }
+    }
+    
+    function renderReviewPage() {
+        if (!currentResult || !currentActiveExam) return;
+        document.getElementById("reviewTitle").innerText = `${currentActiveExam.title} - Detailed Review`;
+        let reviewHtml = "";
+        currentActiveExam.questions.forEach((q, idx) => {
+            const userChoice = currentUserAnswers[idx];
+            const isCorrect = (userChoice === q.correctIndex);
+            const correctText = q.options[q.correctIndex];
+            const userText = (userChoice !== null) ? q.options[userChoice] : "Not answered";
+            reviewHtml += `
+                <div class="review-item">
+                    <div class="review-question">Q${idx+1}: ${escapeHtml(q.text)}</div>
+                    <div><span class="${isCorrect ? 'correct-badge' : 'wrong-badge'}">${isCorrect ? '✓ Correct' : '✗ Incorrect'}</span></div>
+                    <div class="answer-detail">✔ Correct answer: ${escapeHtml(correctText)}</div>
+                    <div class="answer-detail">📌 Your choice: ${escapeHtml(userText)}</div>
+                </div>
+            `;
+        });
+        document.getElementById("reviewContent").innerHTML = reviewHtml;
+        showPage("review");
+    }
+    
+    function resetAndGoHome() {
+        currentActiveExam = null;
+        currentUserAnswers = [];
+        currentResult = null;
+        currentQuestionIdx = 0;
+        document.getElementById("warningContainer").innerHTML = "";
+        showPage("home");
+        renderHomePage();
+    }
+    
+    // Event Listeners
+    document.getElementById("examPrevBtn").addEventListener("click", handlePrevQuestion);
+    document.getElementById("examNextBtn").addEventListener("click", handleNextOrSubmit);
+    document.getElementById("exitToHomeBtn").addEventListener("click", resetAndGoHome);
+    document.getElementById("homeFromResultBtn").addEventListener("click", resetAndGoHome);
+    document.getElementById("homeFromReviewBtn").addEventListener("click", resetAndGoHome);
+    document.getElementById("reviewAnswersBtn").addEventListener("click", () => renderReviewPage());
+    document.getElementById("backToResultFromReviewBtn").addEventListener("click", () => {
+        if (currentResult) showPage("result");
+        else resetAndGoHome();
+    });
+    
+    // Filter Buttons
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentFilter = btn.getAttribute("data-filter");
+            renderHomePage();
+        });
+    });
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // initial render
+    renderHomePage();
+</script>
+</body>
+</html>
