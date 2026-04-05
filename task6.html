@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>To-Do List & Meeting Planner | Smart Task Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e9eef3 0%, #dfe4ea 100%);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 1.8rem;
+            align-items: start;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.02);
+            padding: 1.6rem 1.8rem;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .card:hover {
+            box-shadow: 0 20px 32px rgba(0, 0, 0, 0.12);
+            background: rgba(255, 255, 255, 0.98);
+        }
+
+        h2 {
+            font-size: 1.65rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #1e2a3a, #0f172a);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 1.2rem;
+            border-left: 5px solid #3b82f6;
+            padding-left: 0.9rem;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 1rem 0 0.75rem 0;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        hr {
+            margin: 1rem 0;
+            border: none;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .add-task-form {
+            background: #f8fafc;
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .input-group {
+            margin-bottom: 0.9rem;
+        }
+
+        label {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #334155;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            color: #1e293b;
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            transform: none;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.9rem;
+            font-size: 0.75rem;
+        }
+
+        .task-item {
+            background: #ffffff;
+            border-radius: 1.2rem;
+            padding: 0.9rem 1rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+            border: 1px solid #eef2ff;
+            transition: all 0.15s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .task-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 2;
+        }
+
+        .task-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #0f172a;
+        }
+
+        .task-date {
+            font-size: 0.7rem;
+            color: #475569;
+            background: #f1f5f9;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .completed-task {
+            opacity: 0.7;
+            background: #f1f5f9;
+            text-decoration: line-through;
+        }
+
+        .completed-task .task-title {
+            text-decoration: line-through;
+            color: #64748b;
+        }
+
+        .calendar-event {
+            background: #fef9e3;
+            border-left: 4px solid #f59e0b;
+            padding: 0.8rem;
+            border-radius: 1rem;
+            margin-bottom: 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .calendar-meeting {
+            background: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .empty-message {
+            color: #94a3b8;
+            text-align: center;
+            padding: 1.5rem;
+            font-style: italic;
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+ backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.2s, opacity 0.2s;
+        }
+
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-container {
+            background: #ffffff;
+            border-radius: 2rem;
+            max-width: 550px;
+            width: 90%;
+            padding: 1.8rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.25);
+            animation: modalPop 0.2s ease-out;
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.96);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: #64748b;
+            padding: 0;
+            line-height: 1;
+            box-shadow: none;
+        }
+
+        .modal-close:hover {
+            background: none;
+            color: #0f172a;
+            transform: none;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .time-row {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .time-row select {
+            width: auto;
+            flex: 1;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        @media (max-width: 880px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+            body {
+                padding: 1rem;
+            }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #475569;
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Left: Task Management Area -->
+    <div class="card">
+        <h2>📋 To-Do List</h2>
+        
+        <!-- Add Task Section -->
+        <div class="add-task-form">
+            <div class="input-group">
+                <label>📌 Task Title</label>
+                <input type="text" id="taskTitleInput" placeholder="e.g., Complete design draft">
+            </div>
+            <div class="input-group">
+                <label>📅 Due Date</label>
+                <input type="date" id="taskDueDateInput">
+            </div>
+            <button id="addTaskBtn">+ Add Task</button>
+        </div>
+
+        <!-- Pending Tasks List -->
+        <h3>⏳ In Progress</h3>
+        <div id="pendingTasksList">
+            <div class="empty-message">✨ No pending tasks, add a new task</div>
+        </div>
+
+        <hr>
+        <h3>✅ Completed Tasks</h3>
+        <div id="completedTasksList">
+            <div class="empty-message">✔️ Completed tasks will appear here</div>
+        </div>
+    </div>
+
+    <!-- Right: Calendar & Events (Meeting creation now via modal) -->
+    <div class="card">
+        <h2>📅 Calendar & Events</h2>
+        <!-- Calendar Events Display -->
+        <div id="calendarEventsList">
+            <div class="empty-message">No calendar events yet. Create a meeting or complete a task.</div>
+        </div>
+        <div style="margin-top: 1rem; font-size: 0.7rem; background: #eef2ff; padding: 8px 12px; border-radius: 1rem; color: #334155;">
+            💡 Tip: Click [Done] to complete a task. Click [Create Meeting] on any task to open a modal and schedule a meeting.
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Create Meeting (hidden by default) -->
+<div id="meetingModal" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <span>📅 Create New Meeting</span>
+            <button class="modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="grid-2col">
+            <div class="input-group">
+                <label>Meeting Name</label>
+                <input type="text" id="modalMeetingName" placeholder="e.g., Sprint Review">
+            </div>
+            <div class="input-group">
+                <label>Meeting Date</label>
+                <input type="date" id="modalMeetingDate">
+            </div>
+        </div>
+        <div class="input-group">
+            <label>⏰ Time</label>
+            <div class="time-row">
+                <select id="modalMeetingHour">
+                    <option value="01">01</option><option value="02">02</option><option value="03">03</option>
+                    <option value="04">04</option><option value="05">05</option><option value="06">06</option>
+                    <option value="07">07</option><option value="08">08</option><option value="09" selected>09</option>
+                    <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                </select>
+                <span>:</span>
+                <select id="modalMeetingMinute">
+                    <option value="00">00</option><option value="05">05</option><option value="10">10</option>
+                    <option value="15">15</option><option value="20">20</option><option value="25">25</option>
+                    <option value="30">30</option><option value="35">35</option><option value="40">40</option>
+                    <option value="45">45</option><option value="50">50</option><option value="55">55</option>
+                </select>
+                <select id="modalMeetingAmPm">
+                    <option value="AM">AM</option>
+                    <option value="PM" selected>PM</option>
+                </select>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>👥 Attendees (email, comma separated)</label>
+            <input type="text" id="modalAttendees" placeholder="example@mail.com, team@company.com" value="yourmail@gmail.com">
+        </div>
+        <div class="modal-footer">
+            <button id="cancelModalBtn" class="btn-secondary">Cancel</button>
+            <button id="confirmSaveMeetingBtn">Save Meeting</button>
+        </div>
+        <div id="modalFeedback" style="font-size: 0.75rem; margin-top: 8px; color: #2c7a4d; text-align:center;"></div>
+    </div>
+</div>
+
+<footer>To-Do List & Meeting Planner — Click [Create Meeting] on any task to open modal</footer>
+
+<script>
+    // ---------- Data Model ----------
+    let tasks = [];
+    let meetings = [];
+
+    // Save to localStorage
+    function saveData() {
+        const data = { tasks, meetings };
+        localStorage.setItem('plannerAppData', JSON.stringify(data));
+    }
+
+    // Load data
+    function loadData() {
+        const raw = localStorage.getItem('plannerAppData');
+        if (raw) {
+            try {
+                const data = JSON.parse(raw);
+                tasks = data.tasks || [];
+                meetings = data.meetings || [];
+            } catch(e) { console.warn(e); }
+        }
+        // Demo data matching screenshot context
+        if (tasks.length === 0 && meetings.length === 0) {
+            tasks.push({
+                id: Date.now() + 1,
+                title: "Update Sprint 1",
+                dueDate: "2026-04-03",
+                completed: true,
+                createdAt: new Date().toISOString()
+            });
+            tasks.push({
+                id: Date.now() + 2,
+                title: "Check Sprint 2",
+                dueDate: "2026-04-06",
+                completed: false,
+                createdAt: new Date().toISOString()
+            });
+            meetings.push({
+                id: Date.now() + 100,
+                name: "Sprint 2",
+                date: "2026-04-03",
+                timeString: "09:05 PM",
+                attendees: "yourmail@gmail.com",
+                createdAt: new Date().toISOString()
+            });
+            saveData();
+        }
+    }
+
+    // Render everything
+    function renderAll() {
+        renderTaskLists();
+        renderCalendarEvents();
+    }
+
+    function renderTaskLists() {
+        const pendingContainer = document.getElementById('pendingTasksList');
+        const completedContainer = document.getElementById('completedTasksList');
+        
+        const pendingTasks = tasks.filter(t => !t.completed);
+        const completedTasks = tasks.filter(t => t.completed);
+        
+        if (pendingTasks.length === 0) {
+            pendingContainer.innerHTML = '<div class="empty-message">🎯 No pending tasks, add a new task</div>';
+        } else {
+            pendingContainer.innerHTML = pendingTasks.map(task => `
+                <div class="task-item" data-task-id="${task.id}">
+                    <div class="task-info">
+                        <div class="task-title">${escapeHtml(task.title)}</div>
+                        <div class="task-date">📆 Due ${formatDateForDisplay(task.dueDate)}</div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn-outline btn-sm complete-task-btn" data-id="${task.id}">✅ Done</button>
+                        <button class="btn-outline btn-sm create-meeting-from-task-btn" data-id="${task.id}" data-title="${escapeHtml(task.title)}" data-due="${task.dueDate}">📢 Create Meeting</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        if (completedTasks.length === 0) {
+            completedContainer.innerHTML = '<div class="empty-message">✔️ Completed tasks will appear here</div>';
+        } else {
+            completedContainer.innerHTML = completedTasks.map(task => `
+                <div class="task-item completed-task">
+                    <div class="task-info">
+                        <div class="task-title">${escapeHtml(task.title)}</div>
+                        <div class="task-date">✅ Completed on ${task.dueDate ? formatDateForDisplay(task.dueDate) : 'no date'}</div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn-outline btn-sm reopen-task-btn" data-id="${task.id}">↩️ Undo</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Bind complete buttons
+        document.querySelectorAll('.complete-task-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(btn.getAttribute('data-id'));
+                completeTaskById(id);
+            });
+        });
+        // Bind undo buttons
+        document.querySelectorAll('.reopen-task-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(btn.getAttribute('data-id'));
+                reopenTaskById(id);
+            });
+        });
+        
+        // Bind "Create Meeting" buttons to open modal with pre-filled data from that specific task
+        document.querySelectorAll('.create-meeting-from-task-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const taskTitle = btn.getAttribute('data-title');
+                const taskDue = btn.getAttribute('data-due');
+                openMeetingModal(taskTitle, taskDue);
+            });
+        });
+    }
+    
+    // Modal logic
+    const modal = document.getElementById('meetingModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const confirmSaveBtn = document.getElementById('confirmSaveMeetingBtn');
+    
+    // Inputs inside modal
+    const modalMeetingName = document.getElementById('modalMeetingName');
+    const modalMeetingDate = document.getElementById('modalMeetingDate');
+    const modalMeetingHour = document.getElementById('modalMeetingHour');
+    const modalMeetingMinute = document.getElementById('modalMeetingMinute');
+    const modalMeetingAmPm = document.getElementById('modalMeetingAmPm');
+    const modalAttendees = document.getElementById('modalAttendees');
+    const modalFeedbackSpan = document.getElementById('modalFeedback');
+    
+    function openMeetingModal(prefillName = "", prefillDate = "") {
+        // Reset feedback
+        modalFeedbackSpan.innerText = "";
+        // Set default values: if prefillName exists, use it; else default "Sprint Review"
+        if (prefillName && prefillName.trim() !== "") {
+            modalMeetingName.value = prefillName;
+        } else {
+            modalMeetingName.value = "Team Meeting";
+        }
+        
+        // Prefill date: if task due exists, use it; otherwise use today or current meeting date logic
+        let defaultDate = new Date().toISOString().split('T')[0];
+        if (prefillDate && prefillDate !== "null" && prefillDate.trim() !== "") {
+            modalMeetingDate.value = prefillDate;
+        } else {
+            modalMeetingDate.value = defaultDate;
+        }
+        
+        // Time defaults: 09:05 PM as per original style
+        modalMeetingHour.value = "09";
+        modalMeetingMinute.value = "05";
+        modalMeetingAmPm.value = "PM";
+        
+        // Attendees default optional keep existing or placeholder
+        if (!modalAttendees.value) modalAttendees.value = "yourmail@gmail.com";
+        
+        // Show modal
+        modal.classList.add('active');
+    }
+    
+    function closeModal() {
+        modal.classList.remove('active');
+        modalFeedbackSpan.innerText = "";
+    }
+    
+    function saveMeetingFromModal() {
+        const name = modalMeetingName.value.trim();
+        const date = modalMeetingDate.value;
+        const hour = modalMeetingHour.value;
+        const minute = modalMeetingMinute.value;
+        const ampm = modalMeetingAmPm.value;
+        let attendees = modalAttendees.value.trim();
+        
+        if (!name) {
+            modalFeedbackSpan.innerText = "⚠️ Please enter a meeting name";
+            modalFeedbackSpan.style.color = "#dc2626";
+            return;
+        }
+        if (!date) {
+            modalFeedbackSpan.innerText = "⚠️ Please select a meeting date";
+            modalFeedbackSpan.style.color = "#dc2626";
+            return;
+        }
+        
+        if (!attendees) attendees = "No attendees specified";
+        
+        // Create meeting object
+        const time12ForDisplay = `${hour}:${minute} ${ampm}`;
+        const newMeeting = {
+            id: Date.now(),
+            name: name,
+            date: date,
+            timeString: time12ForDisplay,
+            attendees: attendees,
+            createdAt: new Date().toISOString()
+        };
+        meetings.push(newMeeting);
+        saveData();
+        renderAll();
+        
+        // Show success and close modal after short delay
+        modalFeedbackSpan.innerText = "✅ Meeting saved successfully!";
+        modalFeedbackSpan.style.color = "#2c7a4d";
+        setTimeout(() => {
+            closeModal();
+        }, 800);
+    }
+    
+    // Event listeners for modal
+    closeModalBtn.addEventListener('click', closeModal);
+    cancelModalBtn.addEventListener('click', closeModal);
+    confirmSaveBtn.addEventListener('click', saveMeetingFromModal);
+    // Close modal when clicking outside overlay
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    
+    // Mark task as completed
+    function completeTaskById(id) {
+        const task = tasks.find(t => t.id === id);
+        if (task && !task.completed) {
+            task.completed = true;
+            saveData();
+            renderAll();
+        }
+    }
+    
+    function reopenTaskById(id) {
+        const task = tasks.find(t => t.id === id);
+        if (task && task.completed) {
+            task.completed = false;
+            saveData();
+            renderAll();
+        }
+    }
+    
+    // Add new task
+    function addTask(title, dueDate) {
+        if (!title.trim()) {
+            alert("Please enter a task title");
+            return false;
+        }
+        const newTask = {
+            id: Date.now(),
+            title: title.trim(),
+            dueDate: dueDate || "",
+            completed: false,
+            createdAt: new Date().toISOString()
+        };
+        tasks.push(newTask);
+        saveData();
+        renderAll();
+        return true;
+    }
+    
+    // Render calendar events: completed tasks + meetings
+    function renderCalendarEvents() {
+        const calendarContainer = document.getElementById('calendarEventsList');
+        let eventsHtml = '';
+        
+        const completedTasks = tasks.filter(t => t.completed);
+        if (completedTasks.length > 0) {
+            completedTasks.forEach(task => {
+                eventsHtml += `
+                    <div class="calendar-event">
+                        <div class="flex-between">
+                            <strong>✅ Completed Task</strong>
+                            <span style="font-size:0.7rem;">📌 Done</span>
+                        </div>
+                        <div>📋 ${escapeHtml(task.title)}</div>
+                        <div>📅 Due date: ${task.dueDate ? formatDateForDisplay(task.dueDate) : 'No date set'}</div>
+                        <div style="font-size:0.7rem; color:#4b5563;">Completed: ${new Date().toLocaleDateString()}</div>
+                    </div>
+                `;
+            });
+        }
+        
+        if (meetings.length > 0) {
+            meetings.forEach(meeting => {
+                eventsHtml += `
+                    <div class="calendar-event calendar-meeting">
+                        <div class="flex-between">
+                            <strong>🗓️ Meeting: ${escapeHtml(meeting.name)}</strong>
+                            <span>🕒 ${meeting.timeString}</span>
+                        </div>
+                        <div>📅 Date: ${formatDateForDisplay(meeting.date)}</div>
+                        <div>👥 Attendees: ${escapeHtml(meeting.attendees)}</div>
+                    </div>
+                `;
+            });
+        }
+        
+        if (eventsHtml === '') {
+            calendarContainer.innerHTML = '<div class="empty-message">📭 No calendar events. Create a meeting or complete a task.</div>';
+        } else {
+            calendarContainer.innerHTML = eventsHtml;
+        }
+    }
+    
+    function formatDateForDisplay(dateStr) {
+        if (!dateStr) return 'Not set';
+        try {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[1]}/${parts[2]}/${parts[0]}`;
+            }
+            return dateStr;
+        } catch(e) { return dateStr; }
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // Add task button
+    document.getElementById('addTaskBtn').addEventListener('click', () => {
+        const title = document.getElementById('taskTitleInput').value;
+        let dueDate = document.getElementById('taskDueDateInput').value;
+        if (!dueDate) {
+            dueDate = new Date().toISOString().split('T')[0];
+        }
+        if (addTask(title, dueDate)) {
+            document.getElementById('taskTitleInput').value = '';
+        }
+    });
+    
+    // Initialize app
+    function init() {
+        loadData();
+        const today = new Date().toISOString().split('T')[0];
+        if (!document.getElementById('taskDueDateInput').value) {
+            document.getElementById('taskDueDateInput').value = today;
+        }
+        // Set a default for modal date if needed but modal handles its own prefills
+        renderAll();
+    }
+    
+    init();
+</script>
+</body>
+</html>
